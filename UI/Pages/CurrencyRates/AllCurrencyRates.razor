@@ -1,0 +1,40 @@
+﻿@using Model
+@page "/CurrencyRates/AllCurrencyRates"
+@using Service
+@inject CurrencyRatesService _currencyRatesService
+<h3>Wszystkie waluty</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nazwa waluty bazowej</th>
+            <th>Nazwa waluty docelowej</th>
+            <th>Wartość waluty bazowej</th>
+            <th>Przelicznik waluty docelowej</th>
+            <th>Data ostatniej aktualizacji</th>
+            <th>Dostawca danych</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var currency in Currencies)
+        {
+            <tr>
+                <td>@currency.SourceCurrencyCode</td>
+                <td>@currency.TargetCurrencyCode</td>
+                <td>@currency.SourceToTargetRate</td>
+                <td>@currency.TargetToSourceRate</td>
+                <td>@currency.Date</td>
+                <td>@currency.Provider</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<CurrencyRates> Currencies = new List<CurrencyRates>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Currencies = await _currencyRatesService.GetAll();
+    }
+}

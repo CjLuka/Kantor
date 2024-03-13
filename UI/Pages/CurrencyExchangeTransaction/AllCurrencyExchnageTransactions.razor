@@ -1,0 +1,37 @@
+﻿@page "/CurrencyExchangeTransaction/AllcurrencyExchangeTransactions"
+@using Service
+@inject CurrencyExchangeTransactionService _currencyExchangeTransactionService
+<h3>Wszystkie transakcje kantoru</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nazwa waluty bazowej</th>
+            <th>Nazwa waluty docelowej</th>
+            <th>Wartość waluty bazowej</th>
+            <th>Wartość po przeliczeniu</th>
+            <th>Data ostatniej aktualizacji</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var currency in currencyExchangeTransactions)
+        {
+            <tr>
+                <td>@currency.CurrencyRates.SourceCurrencyCode</td>
+                <td>@currency.CurrencyRates.TargetCurrencyCode</td>
+                <td>@currency.SourceAmount</td>
+                <td>@currency.TargetAmount</td>
+                <td>@currency.Date</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Model.CurrencyExchangeTransaction> currencyExchangeTransactions = new List<Model.CurrencyExchangeTransaction>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        currencyExchangeTransactions = await _currencyExchangeTransactionService.GetAll();
+    }
+}

@@ -1,0 +1,64 @@
+﻿@page "/CurrencyExchangeTransaction/CurrencyExchangeTransaction"
+@using Model
+@using Service
+@inject CurrencyTypesService _currencyTypesService
+@inject CurrencyRatesService _currencyRatesService
+@inject CurrencyExchangeTransactionService _currencyExchangeTransactionService
+<h3>Przewalutowanie</h3>
+
+<div>
+    <h3>Wybierz walute bazową:</h3>
+    <select @onchange="SourceCurrencyCode">
+        <option value="">Wybierz walute</option>
+        @foreach (var user in currencies)
+        {
+            <option value="@user.Name">@user.Name</option>
+        }
+    </select>
+</div>
+
+<div>
+    <h3>Wybierz walute docelową:</h3>
+    <select @onchange="TargetCurrencyCode">
+        <option value="">Wybierz walute</option>
+        @foreach (var user in currencies)
+        {
+            <option value="@user.Name">@user.Name</option>
+        }
+    </select>
+</div>
+<div>
+    <h3>Kwota do przewalutowania:</h3>
+    <input type="number" @bind="amountToConvert" />
+</div>
+
+<button @onclick="PerformCurrencyConversion">Przeprowadź przewalutowanie</button>
+
+
+
+@code {
+	private List<CurrencyTypes> currencies = new List<CurrencyTypes>();
+	private string sourceCurrencyCode;
+	private string targetCurrencyCode;
+	private decimal amountToConvert;
+
+	protected override async Task OnInitializedAsync()
+	{
+		currencies = await _currencyTypesService.GetAll();
+	}
+	private void SourceCurrencyCode(ChangeEventArgs e)
+	{
+		sourceCurrencyCode = e.Value.ToString();
+	}
+
+	private void TargetCurrencyCode(ChangeEventArgs e)
+	{
+		targetCurrencyCode = e.Value.ToString();
+	}
+	private async Task PerformCurrencyConversion()
+	{
+		var currencyRates = await _currencyRatesService.GetBySourceAndTargetAsync(sourceCurrencyCode, targetCurrencyCode);
+
+		var calculate = await _currencyExchangeTransactionService.Calculate(currencyRates.Id, amountToConvert);
+	}
+}
