@@ -12,6 +12,7 @@ namespace Application.Response
         public string Message { get; set; }
         public List<string> ValidationErrors { get; set; }
 
+        public BaseResponse() { }
         public BaseResponse(bool success)
         {
             Success = success;
@@ -44,6 +45,10 @@ namespace Application.Response
         {
             Success = success;
             ValidationErrors = validationErrors;
+        }
+        public BaseResponse()
+        {
+            
         }
     }
 }

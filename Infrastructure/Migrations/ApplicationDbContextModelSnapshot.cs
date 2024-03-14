@@ -46,7 +46,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("CurrencyRatesId");
 
-                    b.ToTable("CurrencyExchangeTransactions");
+                    b.ToTable("CurrencyExchangeTransactions", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Models.Entites.CurrencyRates", b =>
@@ -80,7 +80,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CurrencyRates");
+                    b.ToTable("CurrencyRates", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Models.Entites.CurrencyTypes", b =>
@@ -97,7 +97,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CurrencyTypes");
+                    b.ToTable("CurrencyTypes", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Models.Entites.User", b =>

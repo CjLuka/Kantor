@@ -2,6 +2,7 @@
 using Application.Function.CurrencyRates.Queries.GetAllRates;
 using Application.Function.CurrencyRates.Queries.GetBySourceAndTargetAsync;
 using Application.Function.CurrencyRates.Queries.GetExchangeRatesFromApi;
+using Application.Function.CurrencyTypes.Commands.Add;
 using Application.Function.CurrencyTypes.Queries.GetAll;
 using AutoMapper;
 using Domain.Models.Entites;
@@ -29,6 +30,7 @@ namespace Application.AutoMapper
 
             //CurrencyTypes
             CreateMap<GetAllCurrencyTypesDto, CurrencyTypes>().ReverseMap();
+            CreateMap<AddCurrencyTypesCommand, CurrencyTypes>().ReverseMap();
 
             //CurrencyExchangeTransaction
 

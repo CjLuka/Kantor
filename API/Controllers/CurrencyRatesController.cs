@@ -10,6 +10,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Polly;
 using System.Net.Http;
 using System.Text.Json;
 
@@ -30,12 +31,32 @@ namespace API.Controllers
             _mediator = mediator;
         }
 
+        //[HttpGet]
+        //[Route("GetFromApi")]
+        //public async Task<ActionResult<BaseResponse>> GetCurrencyRatesFromApi()
+        //{
+
+        //    var rates = await _mediator.Send(new GetExchangeRatesFromApiQuery());
+        //    return Ok(rates);
+        //}
+
         [HttpGet]
         [Route("GetFromApi")]
         public async Task<IActionResult> GetCurrencyRatesFromApi()
         {
-            await _mediator.Send(new GetExchangeRatesFromApiQuery());
+            var retryPolicy = Policy
+                    .Handle<Exception>()
+                    .RetryAsync(5, onRetry: (exception, retryCount) =>
+                    {
+                        Console.WriteLine("Error: " + exception.Message + " ... Retry count: " + retryCount);
+                    });
+
+            await retryPolicy.ExecuteAsync(async () =>
+            {
+                await _mediator.Send(new GetExchangeRatesFromApiQuery());
+            });
             return Ok();
+            //return Ok(rates);
         }
 
         [HttpGet]

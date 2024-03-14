@@ -1,4 +1,6 @@
-﻿namespace API.Jobs
+﻿using Polly;
+
+namespace API.Jobs
 {
     public class CurrencyRatesJob
     {
@@ -9,9 +11,24 @@
         }
         public async Task GetFromApi()
         {
-            var apiUrl = "https://localhost:7292/api/CurrencyRates/GetFromApi";
+            //var apiUrl = "https://localhost:7292/api/CurrencyRates/GetFromApi";
 
-            await _httpClient.GetAsync(apiUrl);
+            //var retryPolicy = Policy
+            //    .Handle<HttpRequestException>()
+            //    .RetryAsync(0, (exception, retryCount) =>
+            //    {
+            //        Console.WriteLine($"Błąd podczas próby {retryCount}: {exception.Message}");
+            //    });
+
+            //await retryPolicy.ExecuteAsync(async () =>
+            //{
+            //    var response = await _httpClient.GetAsync(apiUrl);
+            //    response.EnsureSuccessStatusCode();
+
+            //    Console.WriteLine("Pomyślnie pobrano dane.");
+            //});
+
+            //await _httpClient.GetAsync(apiUrl);
         }
     }
 }

@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Data.Entity;
 using Domain.Models.ViewModel;
+using RestSharp;
 
 
 namespace Application.Function.CurrencyRates.Queries.GetExchangeRatesFromApi
@@ -30,79 +31,32 @@ namespace Application.Function.CurrencyRates.Queries.GetExchangeRatesFromApi
             _currencyTypesRepository = currencyTypesRepository;
 
         }
-        //string[] currencies = new string[]
-        //{
-        //    "AUD",
-        //    "BGN",
-        //    "BRL",
-        //    "CAD",
-        //    "CHF",
-        //    "CNY",
-        //    "CZK",
-        //    "DKK",
-        //    "EUR",
-        //    "GBP",
-        //    "HKD",
-        //    "HRK",
-        //    "HUF",
-        //    "IDR",
-        //    "ILS",
-        //    "INR",
-        //    "ISK",
-        //    "JPY",
-        //    "KRW",
-        //    "MXN",
-        //    "MYR",
-        //    "NOK",
-        //    "NZD",
-        //    "PHP",
-        //    "PLN",
-        //    "RON",
-        //    "RUB",
-        //    "SEK",
-        //    "SGD",
-        //    "THB",
-        //    "TRY",
-        //    "USD",
-        //    "ZAR"
-        //};
+        
 
         public async Task<BaseResponse<List<GetExchangeRatesFromApiDto>>> Handle(GetExchangeRatesFromApiQuery request, CancellationToken cancellationToken)
         {
-            //List<Domain.Models.Entites.CurrencyTypes> firstPartSize = new List<Domain.Models.Entites.CurrencyTypes>();
-            //List<Domain.Models.Entites.CurrencyTypes> secondPartSize = new List<Domain.Models.Entites.CurrencyTypes>();
             List<Domain.Models.Entites.CurrencyTypes> currencies = await _currencyTypesRepository.GetAllAsync();
             List<GetExchangeRatesFromApiDto> allCurrencies = new List<GetExchangeRatesFromApiDto>();
 
-            //foreach (var item in currencies)
-            //{
-            //    if(firstPartSize.Count < 18)
-            //    {
-            //        firstPartSize.Add(item);
-            //    }
-            //    else
-            //    {
-            //        secondPartSize.Add(item);
-            //    }
-                
-            //}
+
 
             string apiKey = "fca_live_lft1pbokQhRkZq41U3z1Zxucs4BcPgbhMAHyYLZ6";
 
             var client = _httpClientFactory.CreateClient();
-            
+            var client2 = new RestClient();
             foreach (var item in currencies)
             {
-                //if (item.Id == 16)
-                //{
-                //    await Task.Delay(10000);
-                //}
-                await Task.Delay(3000);
+
+                await Task.Delay(3100);
                 string apiUrl = $"https://api.freecurrencyapi.com/v1/latest?apikey={apiKey}&base_currency={item.Name}";
 
-                var response = await client.GetAsync(apiUrl);
-                if (response.IsSuccessStatusCode)
+                var request2 = new RestRequest(apiUrl, Method.Get);
+
+                
+                var res = await client2.ExecuteAsync(request2);
+                if (res.IsSuccessStatusCode)
                 {
+                    var response = await client.GetAsync(apiUrl);
                     string responseData = await response.Content.ReadAsStringAsync();
 
                     var jsonData = JsonDocument.Parse(responseData);
@@ -157,10 +111,8 @@ namespace Application.Function.CurrencyRates.Queries.GetExchangeRatesFromApi
                                     {
                                         await _currencyRatesRepository.AddAsync(_mapper.Map<Domain.Models.Entites.CurrencyRates>(rate));
                                     }
-
                                     
                                     
-                                    //_context.CurrencyRates.Add(rate);
                                 }
                             }
 
@@ -168,9 +120,21 @@ namespace Application.Function.CurrencyRates.Queries.GetExchangeRatesFromApi
 
                     }
                 }
+                else
+                {
+                    throw new Exception("Błąd połączenia z serwerem");
+                }
 
             }
-            return new BaseResponse<List<GetExchangeRatesFromApiDto>>(allCurrencies, true, "Dodano kursy walut");
+            if(allCurrencies.Count == 1056)
+            {
+                return new BaseResponse<List<GetExchangeRatesFromApiDto>>(allCurrencies, true, "Dodano kursy walut");
+            }
+            else
+            {
+                return new BaseResponse<List<GetExchangeRatesFromApiDto>>(false, $"Liczba brakujących rekordów: {1056 - allCurrencies.Count}");
+            }
+            
         }
         
     }
