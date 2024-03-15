@@ -55,7 +55,7 @@ app.UseHangfireServer();
 app.UseHangfireDashboard();
 app.MapHangfireDashboard("/hangfire");
 
-//RecurringJob.AddOrUpdate<CurrencyRatesJob>("get-currency-rates", x => x.GetFromApi(), "*/5 * * * *");// - co 5 minut
+//RecurringJob.AddOrUpdate<CurrencyRatesJob>("get-currency-rates", x => x.GetFromApi(), "*/3 * * * *");// - co 5 minut
 RecurringJob.AddOrUpdate<CurrencyRatesJob>("get-currency-rates", x => x.GetFromApi(), Cron.Hourly); // co godzine
 
 app.Run();

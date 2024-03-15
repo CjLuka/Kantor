@@ -31,32 +31,12 @@ namespace API.Controllers
             _mediator = mediator;
         }
 
-        //[HttpGet]
-        //[Route("GetFromApi")]
-        //public async Task<ActionResult<BaseResponse>> GetCurrencyRatesFromApi()
-        //{
-
-        //    var rates = await _mediator.Send(new GetExchangeRatesFromApiQuery());
-        //    return Ok(rates);
-        //}
-
         [HttpGet]
         [Route("GetFromApi")]
-        public async Task<IActionResult> GetCurrencyRatesFromApi()
+        public async Task<ActionResult<BaseResponse>> GetCurrencyRatesFromApi()
         {
-            var retryPolicy = Policy
-                    .Handle<Exception>()
-                    .RetryAsync(5, onRetry: (exception, retryCount) =>
-                    {
-                        Console.WriteLine("Error: " + exception.Message + " ... Retry count: " + retryCount);
-                    });
-
-            await retryPolicy.ExecuteAsync(async () =>
-            {
-                await _mediator.Send(new GetExchangeRatesFromApiQuery());
-            });
-            return Ok();
-            //return Ok(rates);
+            var rates = await _mediator.Send(new GetExchangeRatesFromApiQuery());
+            return Ok(rates);
         }
 
         [HttpGet]
