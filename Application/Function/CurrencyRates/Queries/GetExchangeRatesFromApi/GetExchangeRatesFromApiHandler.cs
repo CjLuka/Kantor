@@ -20,17 +20,10 @@ namespace Application.Function.CurrencyRates.Queries.GetExchangeRatesFromApi
 {
     public class GetExchangeRatesFromApiHandler : IRequestHandler<GetExchangeRatesFromApiQuery, BaseResponse<List<GetExchangeRatesFromApiDto>>>
     {
-        private readonly IMapper _mapper;
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ICurrencyRatesRepository _currencyRatesRepository;
-        private readonly ICurrencyTypesRepository _currencyTypesRepository;
+
         private readonly GetFromApiService _getFromApiService;
-        public GetExchangeRatesFromApiHandler(IMapper mapper, IHttpClientFactory httpClientFactory, ICurrencyRatesRepository currencyRatesRepository, ICurrencyTypesRepository currencyTypesRepository, GetFromApiService getFromApiService)
+        public GetExchangeRatesFromApiHandler(GetFromApiService getFromApiService)
         {
-            _mapper = mapper;
-            _httpClientFactory = httpClientFactory;
-            _currencyRatesRepository = currencyRatesRepository;
-            _currencyTypesRepository = currencyTypesRepository;
             _getFromApiService = getFromApiService;
         }
         
@@ -39,7 +32,7 @@ namespace Application.Function.CurrencyRates.Queries.GetExchangeRatesFromApi
         {
             var result = await _getFromApiService.GetFromApi();
 
-            if(result == true)
+            if(result)
             {
                 return new BaseResponse<List<GetExchangeRatesFromApiDto>>(true, "Pobrano dane z API");
             }

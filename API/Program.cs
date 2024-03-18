@@ -28,7 +28,6 @@ builder.Services.AddCors(options =>
         builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 });
 
-//builder.Services.AddHangfire(config => config.UsePostgreSqlStorage("Host=localhost;Port=5432;Database=postgres;User Id=sa;Password=Test123;"));
 builder.Services.AddHangfire(config =>
 {
     var hangfireConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");

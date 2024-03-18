@@ -8,8 +8,8 @@ namespace API.IntegrationTests
 {
     public class CurrencyRatesControllerTests : IClassFixture<WebApplicationFactory<Program>>
     {
-        private HttpClient _client;
-        private WebApplicationFactory<Program> _factory;
+        private readonly HttpClient _client;
+        private readonly WebApplicationFactory<Program> _factory;
 
         public CurrencyRatesControllerTests(WebApplicationFactory<Program> factory)
         {
@@ -34,7 +34,6 @@ namespace API.IntegrationTests
         {
             var scopeFactory = _factory.Services.GetService<IServiceScopeFactory>();
             using var scope = scopeFactory.CreateScope();
-            var _dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>();
 
             var response = await _client.GetAsync("/api/CurrencyRates/GetFromApi");
 

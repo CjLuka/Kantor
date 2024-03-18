@@ -34,16 +34,6 @@ namespace Infrastructure
                 options.Password.RequiredUniqueChars = 0;
             });
 
-            //services.ConfigureApplicationCookie(options =>
-            //{
-            //    options.LoginPath = "/Login";
-            //    options.AccessDeniedPath = "/AccessDenied";
-            //});
-
-            //services.AddIdentity<User, IdentityRole<int>>()
-            //    .AddEntityFrameworkStores<ApplicationDbContext>()
-            //    .AddDefaultTokenProviders();
-
             services.AddScoped(typeof(IBasicRepository<>), typeof(BasicRepository<>));
             services.AddScoped<ICurrencyRatesRepository, CurrencyRatesRepository>();
             services.AddScoped<ICurrencyExchangeTransactionRepository, CurrencyExchangeTransactionRepository>();

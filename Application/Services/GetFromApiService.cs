@@ -20,17 +20,16 @@ namespace Application.Services
         private readonly IMapper _mapper;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ICurrencyRatesRepository _currencyRatesRepository;
-        private readonly ICurrencyTypesRepository _currencyTypesRepository;
-        public GetFromApiService(IMapper mapper, IHttpClientFactory httpClientFactory, ICurrencyRatesRepository currencyRatesRepository, ICurrencyTypesRepository currencyTypesRepository)
+        public GetFromApiService(IMapper mapper, IHttpClientFactory httpClientFactory, ICurrencyRatesRepository currencyRatesRepository)
         {
             _currencyRatesRepository = currencyRatesRepository;
             _httpClientFactory = httpClientFactory;
-            _currencyTypesRepository = currencyTypesRepository;
             _mapper = mapper;
         }
 
         public async Task<bool> GetFromApi()
         {
+            List<GetExchangeRatesFromApiDto> allPln = new List<GetExchangeRatesFromApiDto>();
 
             string apiKey = "fca_live_lft1pbokQhRkZq41U3z1Zxucs4BcPgbhMAHyYLZ6";
             var client = _httpClientFactory.CreateClient();
@@ -64,11 +63,7 @@ namespace Application.Services
                     {
                         string secondCurrencyCode = currency2.Name;
                         decimal secondCurrencyRate = (decimal)currency2.Value.GetDouble();
-                        if (firstCurrencyCode == secondCurrencyCode)
-                        {
-                            continue;
-                        }
-                        else
+                        if (firstCurrencyCode != secondCurrencyCode)
                         {
                             var result = Calculate(firstCurrencyRate, secondCurrencyRate);
 
@@ -81,6 +76,12 @@ namespace Application.Services
                                 Date = DateTime.UtcNow,
                                 Provider = "FreeCurrency"
                             };
+
+                            //JEŚLI PLN BAZOWA TO DODAJ DO LISTY PLNOWEJ
+                            if(firstCurrencyCode == "PLN")
+                            {
+                                allPln.Add(rate);
+                            }
 
                             var rateExist = await _currencyRatesRepository.GetBySourceAndTargetAsync(rate.SourceCurrencyCode, rate.TargetCurrencyCode);
 
@@ -111,6 +112,8 @@ namespace Application.Services
             {
                 throw new Exception("Błąd połączenia z serwerem");
             }
+            //FUNKCJA DO ZAPISU DANYCH DO PLIKU - TYLKO DLA PLN
+            await SaveToFile(allPln, DateTime.UtcNow);
             return true;
         }
 
@@ -125,6 +128,35 @@ namespace Application.Services
             decimal result = firstValueOnPln / secondValueOnPln;
 
             return result;
+        }
+
+        //Pliki są w API/bin/Debug/net8.0/ExchangeRateFiles
+        public async Task SaveToFile(List<GetExchangeRatesFromApiDto> getExchangeRatesFromApiDto, DateTime date)
+        {
+            var fileName = "PLN - " + date.ToString("yyyy-MM-dd HH-mm-ss") + ".txt";
+
+            var binPath = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
+
+            var expectedDirectory = Path.Combine(binPath, "ExchangeRateFiles");
+
+            if(!Directory.Exists(expectedDirectory))
+                Directory.CreateDirectory(expectedDirectory);
+
+            var path = Path.Combine(expectedDirectory, fileName);
+
+            using (FileStream fileStream = File.Create(path))
+            {
+                foreach (var item in getExchangeRatesFromApiDto)
+                {
+                    decimal roundRate = Math.Round(item.TargetToSourceRate, 4);
+
+                    var text = item.SourceCurrencyCode + " " + item.SourceToTargetRate.ToString()  + " " + item.TargetCurrencyCode + " " + roundRate.ToString()  + "\n";
+                    var content = Encoding.UTF8.GetBytes(text);
+
+                    fileStream.Write(content, 0, content.Length);
+                }
+                
+            }
         }
     }
 } 

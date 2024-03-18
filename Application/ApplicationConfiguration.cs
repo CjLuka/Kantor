@@ -17,7 +17,6 @@ namespace Application
         {
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
             services.AddMediatR(Assembly.GetExecutingAssembly());
-            //services.AddTransient<IUserServices, UserServices>();
 
             services.AddScoped<GetFromApiService>();
 

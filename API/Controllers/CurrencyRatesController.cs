@@ -20,14 +20,10 @@ namespace API.Controllers
     [ApiController]
     public class CurrencyRatesController : ControllerBase
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ApplicationDbContext _context;
         private readonly IMediator _mediator;
 
-        public CurrencyRatesController(IHttpClientFactory httpClientFactory, ApplicationDbContext context, IMediator mediator)
+        public CurrencyRatesController(IMediator mediator)
         {
-            _httpClientFactory = httpClientFactory;
-            _context = context;
             _mediator = mediator;
         }
 

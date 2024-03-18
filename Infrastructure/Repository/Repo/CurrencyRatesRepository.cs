@@ -22,8 +22,14 @@ namespace Infrastructure.Repository.Repo
                 .AsNoTracking()
                 .Where(x => x.SourceCurrencyCode == source && x.TargetCurrencyCode == target)
                 .FirstOrDefaultAsync();
-
-            //return currencyRates;
+        }
+        new public async Task<List<CurrencyRates>> GetAllAsync()
+        {
+            return await _context.CurrencyRates
+               .AsNoTracking()
+               .OrderBy(x => x.SourceCurrencyCode)
+               .ToListAsync();
+               
         }
     }
 }

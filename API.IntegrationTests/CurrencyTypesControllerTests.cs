@@ -14,8 +14,8 @@ namespace API.IntegrationTests
 {
     public class CurrencyTypesControllerTests : IClassFixture<WebApplicationFactory<Program>>
     {
-        private HttpClient _client;
-        private WebApplicationFactory<Program> _factory;
+        private readonly HttpClient _client;
+        private readonly WebApplicationFactory<Program> _factory;
 
         public CurrencyTypesControllerTests(WebApplicationFactory<Program> factory)
         {
