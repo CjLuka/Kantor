@@ -1,4 +1,6 @@
 ﻿using Application.Function.CurrencyRates.Commands.Add;
+using Application.Function.CurrencyRates.Commands.ImportFromCsv;
+using Application.Function.CurrencyRates.Commands.ImportFromXlsx;
 using Application.Function.CurrencyRates.Queries.GetAllRates;
 using Application.Function.CurrencyRates.Queries.GetBySourceAndTargetAsync;
 using Application.Function.CurrencyRates.Queries.GetExchangeRatesFromApi;
@@ -50,6 +52,22 @@ namespace API.Controllers
             return rates.Data;
         }
 
+        [HttpPost]
+        [Route("ImportFromCsv")]
+        [Consumes("multipart/form-data")]
+        public async Task<BaseResponse> ImportFromCsv([FromForm] ImportFromCsvCurrencyRatesCommand request)
+        {
+            return await _mediator.Send(request);
+        }
 
-	}
+        [HttpPost]
+        [Route("ImportFromXlsx")]
+        [Consumes("multipart/form-data")]
+        public async Task<BaseResponse> ImportFromXlsx ([FromForm] ImportFromXlsxCurrencyRatesCommand request)
+        {
+            return await _mediator.Send(request);
+        }
+
+
+    }
 }

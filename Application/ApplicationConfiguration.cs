@@ -19,6 +19,8 @@ namespace Application
             services.AddMediatR(Assembly.GetExecutingAssembly());
 
             services.AddScoped<GetFromApiService>();
+            services.AddScoped<FileGeneratorService>();
+            services.AddScoped<CurrencyRatesFileImport>();
 
             return services;
         }

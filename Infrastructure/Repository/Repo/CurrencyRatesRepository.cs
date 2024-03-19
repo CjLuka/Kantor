@@ -29,7 +29,34 @@ namespace Infrastructure.Repository.Repo
                .AsNoTracking()
                .OrderBy(x => x.SourceCurrencyCode)
                .ToListAsync();
-               
+        }
+
+        public async Task<CurrencyRates> AddFromCsv(string[] values)
+        {
+            var transaction = new CurrencyRates
+            {
+                SourceCurrencyCode = values[0],
+                TargetCurrencyCode = values[1],
+                SourceToTargetRate = decimal.Parse(values[2]),
+                TargetToSourceRate = decimal.Parse(values[3]),
+                Date = DateTime.Now,
+                Provider = "FromCsv"
+            };
+            return transaction;
+        }
+
+        public async Task<CurrencyRates> AddFromXlsx(List<string>values)
+        {
+            var transaction = new CurrencyRates
+            {
+                SourceCurrencyCode = values[0],
+                TargetCurrencyCode = values[1],
+                SourceToTargetRate = decimal.Parse(values[2]),
+                TargetToSourceRate = decimal.Parse(values[3]),
+                Date = DateTime.Now,
+                Provider = "FromXlsx"
+            };
+            return transaction;
         }
     }
 }
