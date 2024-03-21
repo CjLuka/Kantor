@@ -27,11 +27,85 @@
     </tbody>
 </table>
 
+<button @onclick="GenerateExcelRaport" class="btn-primary btnGenerate">Generuj raport XLSX</button>
+<button @onclick="GenerateCsvRaport" class="btn-primary btnGenerate">Generuj raport CSV</button>
+<button @onclick="GeneratePdfRaport" class="btn-primary btnGenerate">Generuj raport PDF</button>
+
+<div id="popup" class="alert alert-info" role="alert" style="display:@(isPopupVisible ? "block" : "none")">
+    Raport jest generowany...
+</div>
+
 @code {
     private List<Model.CurrencyExchangeTransaction> currencyExchangeTransactions = new List<Model.CurrencyExchangeTransaction>();
+    private bool isReportGenerated = false;
+    private bool isPopupVisible = false;
 
     protected override async Task OnInitializedAsync()
     {
         currencyExchangeTransactions = await _currencyExchangeTransactionService.GetAll();
     }
+    private async Task GenerateExcelRaport()
+    {
+        ShowPopup();
+        await Task.Run(async () =>
+        {
+            await _currencyExchangeTransactionService.GenerateExcelRaport();
+            await HidePopup();
+        });
+    }
+
+    private async Task GenerateCsvRaport()
+    {
+        ShowPopup();
+        await Task.Run(async () =>
+        {
+            await _currencyExchangeTransactionService.GenerateCsvRaport();
+            await HidePopup();
+        });
+    }
+
+    private async Task GeneratePdfRaport()
+    {
+        ShowPopup();
+        await Task.Run(async () =>
+        {
+            await _currencyExchangeTransactionService.GeneratePdfRaport();
+            await HidePopup();
+        });
+    }
+    public void ShowPopup()
+    {
+        isReportGenerated = true;
+        isPopupVisible = true;
+    }
+
+    public async Task HidePopup()
+    {
+        await Task.Delay(2000);
+        isReportGenerated = false;
+        isPopupVisible = false;
+    }
 }
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    console.log("1");
+    $('.btnGenerate').click(function () {
+        console.log("2");
+        var $btn = $(this);
+        if (!$btn.prop('disabled')) {
+            $btn.prop('disabled', true);
+            setTimeout(function () {
+                $btn.prop('disabled', false);
+            }, 2000);
+        }
+    });
+
+    let stopSubmit = false;
+    $('.btnGenerate').click(function () {
+        if (!stopSubmit) {
+            stopSubmit = true;
+            $(this).click();
+            $(this).prop("disabled", true);
+        }
+    });
+</script>

@@ -1,9 +1,12 @@
 ﻿using Application.Repository.Interface;
+using Application.Response;
 using AutoMapper;
 using Domain.Models.Entites;
 using Domain.Models.ViewModel;
 using Microsoft.AspNetCore.Http;
 using OfficeOpenXml;
+using Polly;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,101 +26,125 @@ namespace Application.Services
             _mapper = mapper;
         }
 
-        public async Task<bool> ImportCsvAsync(IFormFile file)
+        public async Task<BaseResponse> ImportCsvAsync(IFormFile file)
         {
             try
             {
                 List<CurrencyRates> transactions = new List<CurrencyRates>();
-                using (var reader = new StreamReader(file.OpenReadStream()))
+
+                var retryPolicy = Policy
+                    .Handle<IOException>() // Obsługa błędów związanych z operacjami na plikach
+                    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))); // Trzy próby ponowienia z opóźnieniem eksponencjalnym
+
+                await retryPolicy.ExecuteAsync(async () =>
                 {
-                    while (!reader.EndOfStream)
+                    using (var reader = new StreamReader(file.OpenReadStream()))
                     {
-                        var line = await reader.ReadLineAsync();
-                        //var values = line.Split(',');
-                        var values = line.Split(';');
-
-                        var currencyRates = await _currencyRatesRepository.AddFromCsv(values);
-
-                        var currencyRatesExist = await _currencyRatesRepository.GetBySourceAndTargetAsync(values[0], values[1]);
-                        if (currencyRatesExist != null)
+                        while (!reader.EndOfStream)
                         {
-                            var updateRate = new UpdateCurrencyRatesViewModel
+                            var line = await reader.ReadLineAsync();
+                            var values = line.Split(';');
+
+                            var currencyRates = await _currencyRatesRepository.AddFromCsv(values);
+
+                            var currencyRatesExist = await _currencyRatesRepository.GetBySourceAndTargetAsync(values[0], values[1]);
+                            if (currencyRatesExist != null)
                             {
-                                Id = currencyRatesExist.Id,
-                                SourceCurrencyCode = values[0],
-                                TargetCurrencyCode = values[1],
-                                SourceToTargetRate = 1,
-                                TargetToSourceRate = decimal.Parse(values[3]),
-                                Date = DateTime.UtcNow,
-                                Provider = "FromCsv"
-                            };
-                            var map = _mapper.Map<CurrencyRates>(updateRate);
-                            await _currencyRatesRepository.UpdateAsync(map);
+                                var updateRate = new UpdateCurrencyRatesViewModel
+                                {
+                                    Id = currencyRatesExist.Id,
+                                    SourceCurrencyCode = values[0],
+                                    TargetCurrencyCode = values[1],
+                                    SourceToTargetRate = 1,
+                                    TargetToSourceRate = decimal.Parse(values[3]),
+                                    Date = DateTime.UtcNow,
+                                    Provider = "FromCsv"
+                                };
+                                var map = _mapper.Map<CurrencyRates>(updateRate);
+                                await _currencyRatesRepository.UpdateAsync(map);
+                                Log.ForContext("updateRate", map, destructureObjects: true)
+                                    .Information("Zaktualizowano przelicznik waluty {@updateRate}", map);
+                            }
+                            else
+                            {
+                                await _currencyRatesRepository.AddAsync(currencyRates);
+                                Log.ForContext("createRates", currencyRates, destructureObjects: true)
+                                    .Information("Dodano przelicznik waluty {@createRates}", currencyRates);
+                            }
                         }
-                        else
-                        {
-                            await _currencyRatesRepository.AddAsync(currencyRates);
-                        }
+                        Log.Information("Zaimportowano plik " + file.FileName);
                     }
-                    return true;
-                }
+                });
+                return new BaseResponse(true, "Poprawnie zaimportowano plik Csv");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Wystąpił błąd podczas importowania pliku CSV: {ex.Message}");
-                return false;
+                Log.Error($"Wystąpił błąd podczas importowania pliku CSV: {ex.Message}");
+                return new BaseResponse(false, "Błąd podczas importowania pliku Csv");
             }
         }
 
-        public async Task<bool> ImportXlsxAsync(IFormFile file)
+        public async Task<BaseResponse> ImportXlsxAsync(IFormFile file)
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             try
             {
-                using (var stream = file.OpenReadStream())
-                using (var package = new ExcelPackage(stream))
+                var retryPolicy = Policy
+                    .Handle<IOException>() // Obsłga błędów związanych z operacjami na plikach
+                    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))); // Trzy próby ponowienia z opóźnieniem eksponencjalnym
+
+                await retryPolicy.ExecuteAsync(async () =>
                 {
-                    var worksheet = package.Workbook.Worksheets[0]; // Zakładamy, że dane znajdują się na pierwszym arkuszu
-                    var rowCount = worksheet.Dimension.Rows;
-
-                    for (int row = 1; row <= rowCount; row++) // Zakładamy, że pierwszy wiersz nie zawiera nagłówków
+                    using (var stream = file.OpenReadStream())
+                    using (var package = new ExcelPackage(stream))
                     {
-                        var values = new List<string>();
-                        for (int col = 1; col <= worksheet.Dimension.Columns; col++)
-                        {
-                            values.Add(worksheet.Cells[row, col].Value?.ToString());
-                        }
+                        var worksheet = package.Workbook.Worksheets[0]; // Zakładamy, że dane znajdują się na pierwszym arkuszu
+                        var rowCount = worksheet.Dimension.Rows;
 
-                        var currencyRates = await _currencyRatesRepository.AddFromXlsx(values);
-
-                        var currencyRatesExist = await _currencyRatesRepository.GetBySourceAndTargetAsync(values[0], values[1]);
-                        if (currencyRatesExist != null)
+                        for (int row = 1; row <= rowCount; row++) // Zakładamy, że pierwszy wiersz nie zawiera nagłówków
                         {
-                            var updateRate = new UpdateCurrencyRatesViewModel
+                            var values = new List<string>();
+                            for (int col = 1; col <= worksheet.Dimension.Columns; col++)
                             {
-                                Id = currencyRatesExist.Id,
-                                SourceCurrencyCode = values[0],
-                                TargetCurrencyCode = values[1],
-                                SourceToTargetRate = 1,
-                                TargetToSourceRate = decimal.Parse(values[3]),
-                                Date = DateTime.UtcNow,
-                                Provider = "FromExcel"
-                            };
-                            var map = _mapper.Map<CurrencyRates>(updateRate);
-                            await _currencyRatesRepository.UpdateAsync(map);
+                                values.Add(worksheet.Cells[row, col].Value?.ToString());
+                            }
+
+                            var currencyRates = await _currencyRatesRepository.AddFromXlsx(values);
+
+                            var currencyRatesExist = await _currencyRatesRepository.GetBySourceAndTargetAsync(values[0], values[1]);
+                            if (currencyRatesExist != null)
+                            {
+                                var updateRate = new UpdateCurrencyRatesViewModel
+                                {
+                                    Id = currencyRatesExist.Id,
+                                    SourceCurrencyCode = values[0],
+                                    TargetCurrencyCode = values[1],
+                                    SourceToTargetRate = 1,
+                                    TargetToSourceRate = decimal.Parse(values[3]),
+                                    Date = DateTime.UtcNow,
+                                    Provider = "FromExcel"
+                                };
+                                var map = _mapper.Map<CurrencyRates>(updateRate);
+                                await _currencyRatesRepository.UpdateAsync(map);
+                                Log.ForContext("updateRate", map, destructureObjects: true)
+                                    .Information("Zaktualizowano przelicznik waluty {@updateRate}", map);
+                            }
+                            else
+                            {
+                                await _currencyRatesRepository.AddAsync(currencyRates);
+                                Log.ForContext("createRates", currencyRates, destructureObjects: true)
+                                    .Information("Dodano przelicznik waluty {@createRates}", currencyRates);
+                            }
                         }
-                        else
-                        {
-                            await _currencyRatesRepository.AddAsync(currencyRates);
-                        }
+                        Log.Information("Zaimportowano plik " + file.FileName);
                     }
-                    return true;
-                }
+                });
+                return new BaseResponse(true, "Poprawnie zaimportowano plik Xlsx");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Wystąpił błąd podczas importowania pliku Excel: {ex.Message}");
-                return false;
+                Log.Error($"Wystąpił błąd podczas importowania pliku Xlsx: {ex.Message}");
+                return new BaseResponse(false, "Błąd podczas importowania pliku Xlsx");
             }
         }
     }

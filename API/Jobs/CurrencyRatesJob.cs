@@ -1,4 +1,5 @@
 ﻿using Polly;
+using Serilog;
 
 namespace API.Jobs
 {
@@ -19,8 +20,8 @@ namespace API.Jobs
                                    retryAttempt => TimeSpan.FromSeconds(10), // czas oczekiwania między próbami (10 sekund)
                                    onRetry: (exception, timeSpan, retryCount, context) =>
                                    {
-                                       Console.WriteLine($"Błąd podczas próby {retryCount}: {exception.Message}");
-                                       Console.WriteLine($"Czas oczekiwania przed kolejną próbą: {timeSpan}");
+                                       Log.Error($"Błąd podczas próby {retryCount}: {exception.Message}");
+                                       Log.Error($"Czas oczekiwania przed kolejną próbą: {timeSpan}");
                                    });
 
             await retryPolicy.ExecuteAsync(async () =>
@@ -28,7 +29,7 @@ namespace API.Jobs
                 var response = await _httpClient.GetAsync(apiUrl);
                 response.EnsureSuccessStatusCode();
 
-                Console.WriteLine("Pomyślnie pobrano dane.");
+                Log.Information("Pobrano dane");
             });
         }
     }

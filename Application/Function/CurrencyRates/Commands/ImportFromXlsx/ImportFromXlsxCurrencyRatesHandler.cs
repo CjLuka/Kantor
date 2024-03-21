@@ -19,7 +19,7 @@ namespace Application.Function.CurrencyRates.Commands.ImportFromXlsx
         public async Task<BaseResponse> Handle(ImportFromXlsxCurrencyRatesCommand request, CancellationToken cancellationToken)
         {
             var import = await _currencyRatesFileImport.ImportXlsxAsync(request.FileStream);
-            if (import)
+            if (import.Success == true)
             {
                 return new BaseResponse(true, "Zaimportowano dane z pliku xlsx");
             }

@@ -24,5 +24,21 @@ namespace UI.Service
 			var response = await _httpClient.GetFromJsonAsync<List<CurrencyExchangeTransaction>>("api/CurrencyExchangeTransaction/GetAll");
 			return response;
 		}
-	}
+
+		public async Task <bool> GenerateExcelRaport()
+		{
+			var response = await _httpClient.GetAsync("api/CurrencyExchangeTransaction/GenerateXlsx");
+			return true;
+		}
+        public async Task<bool> GenerateCsvRaport()
+        {
+            var response = await _httpClient.GetAsync("api/CurrencyExchangeTransaction/GenerateCsv");
+            return true;
+        }
+        public async Task<bool> GeneratePdfRaport()
+        {
+            var response = await _httpClient.GetAsync("api/CurrencyExchangeTransaction/GeneratePdf");
+            return true;
+        }
+    }
 }

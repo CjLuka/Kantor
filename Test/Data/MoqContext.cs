@@ -102,6 +102,16 @@ namespace Test.Data
                 {
                     Id = 1,
                     CurrencyRatesId = 1,
+                    CurrencyRates = new CurrencyRates
+                    {
+                        Id = 1,
+                        SourceCurrencyCode = "PLN",
+                        TargetCurrencyCode = "EUR",
+                        SourceToTargetRate = 1,
+                        TargetToSourceRate = 0.233m,
+                        Date = DateTime.UtcNow,
+                        Provider = "TestowyProvider"
+                    },
                     SourceAmount = 10,
                     TargetAmount = 2.33m,
                     Date = DateTime.UtcNow
@@ -110,6 +120,16 @@ namespace Test.Data
                 {
                     Id = 2,
                     CurrencyRatesId = 2,
+                    CurrencyRates = new CurrencyRates
+                    {
+                        Id = 2,
+                        SourceCurrencyCode = "PLN",
+                        TargetCurrencyCode = "USD",
+                        SourceToTargetRate = 1,
+                        TargetToSourceRate = 0.255m,
+                        Date = DateTime.UtcNow,
+                        Provider = "TestowyProvider"
+                    },
                     SourceAmount = 10,
                     TargetAmount = 2.55m,
                     Date = DateTime.UtcNow

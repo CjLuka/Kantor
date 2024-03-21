@@ -39,5 +39,36 @@ namespace API.IntegrationTests
 
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
         }
+
+        [Fact]
+        public async Task CurrencyRates_ImportFromCsv_ReturnsOkResult()
+        {
+            var scopeFactory = _factory.Services.GetService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+
+            MultipartFormDataContent form = new MultipartFormDataContent();
+            FileStream fileStream = File.OpenRead("D:\\TestImportFromCsv.csv");
+            form.Add(new StreamContent(fileStream), "FileStream", "fileCsv");
+
+
+            var response = await _client.PostAsync("/api/CurrencyRates/ImportFromCsv", form);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async Task CurrencyRates_ImportFromXlsx_ReturnsOkResult()
+        {
+            var scopeFactory = _factory.Services.GetService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+
+            MultipartFormDataContent form = new MultipartFormDataContent();
+            FileStream fileStream = File.OpenRead("D:\\TestImportFromExcel.xlsx");
+            form.Add(new StreamContent(fileStream), "FileStream", "fileXlsx");
+
+            var response = await _client.PostAsync("/api/CurrencyRates/ImportFromXlsx", form);
+
+            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        }
     }
 }

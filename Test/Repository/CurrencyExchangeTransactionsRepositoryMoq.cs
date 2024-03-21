@@ -23,6 +23,12 @@ namespace Test.Repository
                 return _context.CurrencyExchangeTransactions;
             });
 
+            _currencyExchangeTransactionRepository.Setup(repo => repo.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((int id) =>
+            {
+                return _context.CurrencyExchangeTransactions
+                    .FirstOrDefault(x => x.Id == id);
+            });
+
             _currencyExchangeTransactionRepository.Setup(repo => repo.ChangeMoney(It.IsAny<decimal>(), It.IsAny<CurrencyRates>())).ReturnsAsync((decimal amountToConvert, CurrencyRates currencyRates) =>
             {
                 CurrencyExchangeTransaction currencyExchangeTransaction = new CurrencyExchangeTransaction()

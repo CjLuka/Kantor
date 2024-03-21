@@ -39,7 +39,7 @@ namespace Infrastructure.Repository.Repo
                 TargetCurrencyCode = values[1],
                 SourceToTargetRate = decimal.Parse(values[2]),
                 TargetToSourceRate = decimal.Parse(values[3]),
-                Date = DateTime.Now,
+                Date = DateTime.UtcNow,
                 Provider = "FromCsv"
             };
             return transaction;
@@ -53,7 +53,7 @@ namespace Infrastructure.Repository.Repo
                 TargetCurrencyCode = values[1],
                 SourceToTargetRate = decimal.Parse(values[2]),
                 TargetToSourceRate = decimal.Parse(values[3]),
-                Date = DateTime.Now,
+                Date = DateTime.UtcNow,
                 Provider = "FromXlsx"
             };
             return transaction;

@@ -12,6 +12,9 @@ using iText.Layout;
 using System.Threading.Tasks;
 using System.Transactions;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Serilog;
+using Application.Response;
+using Microsoft.AspNetCore.Http;
 
 namespace Application.Services
 {
@@ -27,7 +30,7 @@ namespace Application.Services
 
         }
         //Generowanie CSV
-        public async Task GenerateCsvAsync()
+        public async Task<BaseResponse<string>> GenerateCsvAsync()
         {
             var allCurrencyExchangeTransaction = await _currencyExchangeTransactionRepository.GetAllAsync();
 
@@ -58,10 +61,12 @@ namespace Application.Services
             }
 
             File.WriteAllText(path, csv.ToString());
+            Log.Information("Poprawnie wygenerowano wszystkie transackje w pliku csv " + fileName);
+            return new BaseResponse<string>(path, true, "Poprawnie wygenerowano plik csv");
         }
 
         //Generowanie XLSX
-        public async Task GenerateXlsxAsync()
+        public async Task<BaseResponse<string>> GenerateXlsxAsync()
         {
             var allCurrencyExchangeTransaction = await _currencyExchangeTransactionRepository.GetAllAsync();
 
@@ -100,11 +105,13 @@ namespace Application.Services
                 }
 
                 package.Save();
+                Log.Information("Poprawnie wygenerowano wszystkie transackje w pliku xlsx " + fileName);
+                return new BaseResponse<string>(path,true, "Poprawnie wygenerowano plik Xlsx");
             }
         }
 
         //Generowanie PDF
-        public async Task GeneratePdfAsync()
+        public async Task<BaseResponse<string>> GeneratePdfAsync()
         {
             var allCurrencyExchangeTransaction = await _currencyExchangeTransactionRepository.GetAllAsync();
 
@@ -141,8 +148,9 @@ namespace Application.Services
                         table.AddCell(conversion.TargetAmount.ToString());
                         table.AddCell(conversion.Date.ToString("yyyy-MM-dd HH:mm:ss"));
                     }
-
                     document.Add(table);
+                    Log.Information("Poprawnie wygenerowano wszystkie transackje w pliku pdf " + fileName);
+                    return new BaseResponse<string>(path, true, "Poprawnie wygenerowano plik Pdf");
                 }
             }
         }

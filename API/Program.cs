@@ -5,6 +5,7 @@ using Application;
 using Hangfire;
 using Hangfire.PostgreSql;
 using API.Jobs;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +35,15 @@ builder.Services.AddHangfire(config =>
     config.UsePostgreSqlStorage(hangfireConnectionString);
 });
 
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    //.WriteTo.Console()
+    .WriteTo.File("logs/myLogs-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+//DO LOGOWANIA KA¯DEJ AKCJI
+//builder.Host.UseSerilog();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -42,6 +52,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+//DO LOGOWANIA KA¯DEJ AKCJI
+//app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 

@@ -35,5 +35,11 @@ namespace Infrastructure.Repository.Repo
                 .Include(x => x.CurrencyRates)
                 .ToListAsync();
         }
+        new public async Task<CurrencyExchangeTransaction> GetByIdAsync(int id)
+        {
+            return await _context.CurrencyExchangeTransactions
+                .Include(x => x.CurrencyRates)
+                .FirstOrDefaultAsync(x => x.Id == id);
+        }
     }
 }

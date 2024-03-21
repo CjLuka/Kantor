@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Polly;
+using Serilog;
 using System.Net.Http;
 using System.Text.Json;
 
@@ -23,10 +24,12 @@ namespace API.Controllers
     public class CurrencyRatesController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly ILogger<CurrencyRatesController> _logger;
 
-        public CurrencyRatesController(IMediator mediator)
+        public CurrencyRatesController(IMediator mediator, ILogger<CurrencyRatesController> logger)
         {
             _mediator = mediator;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -65,7 +68,11 @@ namespace API.Controllers
         [Consumes("multipart/form-data")]
         public async Task<BaseResponse> ImportFromXlsx ([FromForm] ImportFromXlsxCurrencyRatesCommand request)
         {
-            return await _mediator.Send(request);
+            var import = await _mediator.Send(request);
+            
+            _logger.LogInformation(import.Success.ToString());
+            _logger.LogInformation(import.Message.ToString());
+            return import;
         }
 
 

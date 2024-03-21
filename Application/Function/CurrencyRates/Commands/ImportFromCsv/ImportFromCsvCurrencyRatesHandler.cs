@@ -19,8 +19,8 @@ namespace Application.Function.CurrencyRates.Commands.ImportFromCsv
         public async Task<BaseResponse> Handle(ImportFromCsvCurrencyRatesCommand request, CancellationToken cancellationToken)
         {
             var import = await _currencyRatesFileImport.ImportCsvAsync(request.FileStream);
-
-            if (import)
+            
+            if (import.Success == true)
             {
                 return new BaseResponse(true, "Zaimportowano dane walut z pliku csv");
             }
