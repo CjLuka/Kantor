@@ -16,6 +16,7 @@ namespace Test
         protected readonly Mock<ICurrencyRatesRepository> _currencyRatesRepository;        
         protected readonly Mock<ICurrencyExchangeTransactionRepository> _currencyExchangeTransactionRepository;        
         protected readonly IMapper _mapper;
+        protected readonly Mock<IHttpClientFactory> _httpClientFactory;
 
         public BaseTest()
         {
@@ -27,6 +28,9 @@ namespace Test
             _currencyTypesRepository = CurrencyTypesRepositoryMoq.getCurrencyTypesRepository();
             _currencyRatesRepository = CurrencyRatesRepositoryMoq.getCurrencyRatesRepository();
             _currencyExchangeTransactionRepository = CurrencyExchangeTransactionsRepositoryMoq.getCurrencyExchangeTransactionRepository();
+            _httpClientFactory = new Mock<IHttpClientFactory>();
+
+
         }
     }
 }
